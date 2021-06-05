@@ -1,5 +1,9 @@
 var folders;
 var homeFolderId = "1"; //"Lesezeichenleiste";
+var excludeMatcher = (title) => {
+	return title === "aaa";
+};
+
 $(function () {
 	folders = new Array();
 	buildSelectOptions();
@@ -157,6 +161,11 @@ function processNode(bookmarkNode, query, parentNodes) {
 					return node.title;
 				})
 				.join("\\");
+
+			if (excludeMatcher(bookmarkNode.title)) {
+				return;
+			}
+
 			folders.push({
 				title: bookmarkNode.title,
 				id: bookmarkNode.id,

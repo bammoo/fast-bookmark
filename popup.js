@@ -1,18 +1,20 @@
 var folders;
-var homeFolderId = "1"; //"Lesezeichenleiste";
+var homeFolderId = '1'; //"Lesezeichenleiste";
 var excludeMatcher = (title) => {
-  return (
-    ["aaa", "old", "项目", "Mobile Bookmarks", "Other Bookmarks"].indexOf(
-      title
-    ) > -1
-  );
+  return ['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1;
 };
-const CACHE_KEY_RECENT_FOLDER = "CACHE_KEY_RECENT_FOLDER";
-const recentFolders =
-  JSON.parse(localStorage.getItem(CACHE_KEY_RECENT_FOLDER)) || [];
+const CACHE_KEY_RECENT_FOLDER = 'CACHE_KEY_RECENT_FOLDER';
+let recentFolders = JSON.parse(localStorage.getItem(CACHE_KEY_RECENT_FOLDER)) || [];
 const recentFoldersIDs = recentFolders.map((i) => i.id);
 const saveRecent = (newItem) => {
+  const index = recentFolders.indexOf(newItem);
+  if (index) {
+    recentFolders.splice(0, index);
+  }
   recentFolders.push(newItem);
+  if (recentFolders.length > 10) {
+    recentFolders = recentFolders.slice(0, 10);
+  }
   localStorage.setItem(CACHE_KEY_RECENT_FOLDER, JSON.stringify(recentFolders));
 };
 
@@ -21,11 +23,11 @@ $(function () {
   buildSelectOptions();
 
   const saveTab = () => {
-    const parentId = $("#select-box").val();
+    const parentId = $('#select-box').val();
     const folderTItle = folders.find((i) => i.id === parentId).title;
     saveRecent({ id: parentId, title: folderTItle });
 
-    const title = $("#inputTitle").val();
+    const title = $('#inputTitle').val();
     chrome.bookmarks.create({
       parentId,
       title,
@@ -36,17 +38,17 @@ $(function () {
   var currentTab;
   chrome.tabs.getSelected(null, function (tab) {
     currentTab = tab;
-    $("#inputTitle").val(currentTab.title);
+    $('#inputTitle').val(currentTab.title);
   });
 
-  $("body").on("keyup", ".select2-input", function (event) {
+  $('body').on('keyup', '.select2-input', function (event) {
     if (event.which === 13) {
-      var inputStr = $(".select2-input").val();
-      if (inputStr.indexOf(">") !== -1) {
-        var elems = inputStr.split(">");
+      var inputStr = $('.select2-input').val();
+      if (inputStr.indexOf('>') !== -1) {
+        var elems = inputStr.split('>');
 
         //new folder on homeFolder level
-        if (elems[0] === "") {
+        if (elems[0] === '') {
           var newFolderName = elems[1].trim();
 
           //create new folder
@@ -60,7 +62,7 @@ $(function () {
           findFolderNode({ title: newFolderName }, function () {
             chrome.bookmarks.create({
               parentId: folders[0].id,
-              title: $("#inputTitle").val(),
+              title: $('#inputTitle').val(),
               url: currentTab.url,
             });
             window.close();
@@ -84,7 +86,7 @@ $(function () {
             findFolderNode({ title: newFolderName }, function () {
               chrome.bookmarks.create({
                 parentId: folders[0].id,
-                title: $("#inputTitle").val(),
+                title: $('#inputTitle').val(),
                 url: currentTab.url,
               });
               window.close();
@@ -96,22 +98,22 @@ $(function () {
   });
 
   setTimeout(function () {
-    $("#select-box").select2("open");
+    $('#select-box').select2('open');
     //        if (!select2.opened()) {
     //            select2.open();
     //        }
   }, 100);
 
-  $("#select-box").change(function () {
+  $('#select-box').change(function () {
     saveTab();
     window.close();
   });
 
-  $("#submitBtn").click(function (e) {
-    if ($("#select-box").val() === "") {
+  $('#submitBtn').click(function (e) {
+    if ($('#select-box').val() === '') {
       e.preventDefault();
-      $("#notifications").show();
-      $("#notifications").html("Choose a folder");
+      $('#notifications').show();
+      $('#notifications').html('Choose a folder');
     } else {
       saveTab();
       window.close();
@@ -120,7 +122,7 @@ $(function () {
 });
 
 function buildSelectOptions() {
-  var query = "";
+  var query = '';
   chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
     processArrayOfNodes(bookmarkTreeNodes, query, []);
     for (i = 0; i < folders.length; i++) {
@@ -129,27 +131,22 @@ function buildSelectOptions() {
       if (recentFoldersIDs.includes(id)) {
         continue;
       }
-      if (folders[i].path && folders[i].path.length)
-        text += " (" + folders[i].path + ")";
-      $("#select-box").prepend(
-        $("<option value=" + folders[i].id + ">" + text + "</option>")
-      );
+      if (folders[i].path && folders[i].path.length) text += ' (' + folders[i].path + ')';
+      $('#select-box').prepend($('<option value=' + folders[i].id + '>' + text + '</option>'));
     }
     for (i = 0; i < recentFolders.length; i++) {
       var text = recentFolders[i].title;
       var id = recentFolders[i].id;
-      $("#select-box").prepend(
-        $("<option value=" + id + ">" + text + "</option>")
-      );
+      $('#select-box').prepend($('<option value=' + id + '>' + text + '</option>'));
     }
-    $("#select-box").prepend($(`<option value="" selected>选择...</option>`));
-    $(".select2").select2({ matcher: matcher });
+    $('#select-box').prepend($(`<option value="" selected>选择...</option>`));
+    $('.select2').select2({ matcher: matcher });
   });
 }
 
 var r = new RegExp(/\s\(.*\)?$/);
 function matcher(params, data) {
-  if ($.trim(params) === "") {
+  if ($.trim(params) === '') {
     return data;
   }
 
@@ -163,8 +160,8 @@ function findFolderNode(query, callback) {
   chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
     processArrayOfNodes(bookmarkTreeNodes, query, []);
     if (folders.length === 0) {
-      $("#notifications").show();
-      $("#notifications").html("Folder not found");
+      $('#notifications').show();
+      $('#notifications').html('Folder not found');
     } else {
       callback();
     }
@@ -185,7 +182,7 @@ function processNode(bookmarkNode, query, parentNodes) {
 
   if (!bookmarkNode.url) {
     if (
-      query === "" ||
+      query === '' ||
       (query.title && bookmarkNode.title === query.title) ||
       (query.id && bookmarkNode.id === query.id)
     ) {
@@ -193,7 +190,7 @@ function processNode(bookmarkNode, query, parentNodes) {
         .map(function (node) {
           return node.title;
         })
-        .join("\\");
+        .join('\\');
 
       folders.push({
         title: bookmarkNode.title,

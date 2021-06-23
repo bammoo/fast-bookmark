@@ -8,10 +8,10 @@ let recentFolders = JSON.parse(localStorage.getItem(CACHE_KEY_RECENT_FOLDER)) ||
 const recentFoldersIDs = recentFolders.map((i) => i.id);
 const saveRecent = (newItem) => {
   const index = recentFolders.indexOf(newItem);
-  if (index) {
+  if (index > -1) {
     recentFolders.splice(0, index);
   }
-  recentFolders.push(newItem);
+  recentFolders.unshift(newItem);
   if (recentFolders.length > 10) {
     recentFolders = recentFolders.slice(0, 10);
   }
@@ -125,6 +125,12 @@ function buildSelectOptions() {
   var query = '';
   chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
     processArrayOfNodes(bookmarkTreeNodes, query, []);
+    $('#select-box').append($(`<option value="" selected>选择...</option>`));
+    for (i = 0; i < recentFolders.length; i++) {
+      var text = recentFolders[i].title;
+      var id = recentFolders[i].id;
+      $('#select-box').append($('<option value=' + id + '>' + text + '</option>'));
+    }
     for (i = 0; i < folders.length; i++) {
       var text = folders[i].title;
       const id = folders[i].id;
@@ -132,14 +138,8 @@ function buildSelectOptions() {
         continue;
       }
       if (folders[i].path && folders[i].path.length) text += ' (' + folders[i].path + ')';
-      $('#select-box').prepend($('<option value=' + folders[i].id + '>' + text + '</option>'));
+      $('#select-box').append($('<option value=' + folders[i].id + '>' + text + '</option>'));
     }
-    for (i = 0; i < recentFolders.length; i++) {
-      var text = recentFolders[i].title;
-      var id = recentFolders[i].id;
-      $('#select-box').prepend($('<option value=' + id + '>' + text + '</option>'));
-    }
-    $('#select-box').prepend($(`<option value="" selected>选择...</option>`));
     $('.select2').select2({ matcher: matcher });
   });
 }

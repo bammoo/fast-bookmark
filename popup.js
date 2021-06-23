@@ -4,12 +4,13 @@ var excludeMatcher = (title) => {
   return ['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1;
 };
 const CACHE_KEY_RECENT_FOLDER = 'CACHE_KEY_RECENT_FOLDER';
-let recentFolders = JSON.parse(localStorage.getItem(CACHE_KEY_RECENT_FOLDER)) || [];
+let recentFolders = [];
+recentFolders = JSON.parse(localStorage.getItem(CACHE_KEY_RECENT_FOLDER)) || [];
 const recentFoldersIDs = recentFolders.map((i) => i.id);
 const saveRecent = (newItem) => {
   const index = recentFolders.indexOf(newItem);
   if (index > -1) {
-    recentFolders.splice(0, index);
+    recentFolders.splice(index, 1);
   }
   recentFolders.unshift(newItem);
   if (recentFolders.length > 10) {

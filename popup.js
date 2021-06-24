@@ -6,15 +6,13 @@ var excludeMatcher = (title) => {
 const CACHE_KEY_RECENT_FOLDER = 'CACHE_KEY_RECENT_FOLDER';
 let recentFolders = [];
 recentFolders = JSON.parse(localStorage.getItem(CACHE_KEY_RECENT_FOLDER)) || [];
-const recentFoldersIDs = recentFolders.map((i) => i.id);
+let recentFoldersIDs = recentFolders.map((i) => i.id);
 const saveRecent = (newItem) => {
-  const index = recentFolders.indexOf(newItem);
-  if (index > -1) {
-    recentFolders.splice(index, 1);
-  }
+  // remove previous occurrences of this foler
+  recentFolders = recentFolders.filter((i) => i.id !== newItem.id);
   recentFolders.unshift(newItem);
   if (recentFolders.length > 10) {
-    recentFolders = recentFolders.slice(0, 10);
+    recentFolders = recentFolders.slice(0, 18);
   }
   localStorage.setItem(CACHE_KEY_RECENT_FOLDER, JSON.stringify(recentFolders));
 };

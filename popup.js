@@ -59,6 +59,7 @@ $(function () {
           //save bookmark in new folder
           folders = new Array();
           findFolderNode({ title: newFolderName }, function () {
+            saveRecent({ id: folders[0].id, title: newFolderName });
             chrome.bookmarks.create({
               parentId: folders[0].id,
               title: $('#inputTitle').val(),
@@ -83,6 +84,7 @@ $(function () {
             //save bookmark in new folder
             folders = new Array();
             findFolderNode({ title: newFolderName }, function () {
+              saveRecent({ id: folders[0].id, title: newFolderName });
               chrome.bookmarks.create({
                 parentId: folders[0].id,
                 title: $('#inputTitle').val(),
@@ -124,21 +126,33 @@ function buildSelectOptions() {
   var query = '';
   chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
     processArrayOfNodes(bookmarkTreeNodes, query, []);
-    $('#select-box').append($(`<option value="" selected>选择...</option>`));
-    for (i = 0; i < recentFolders.length; i++) {
-      var text = recentFolders[i].title;
-      var id = recentFolders[i].id;
-      $('#select-box').append($('<option value=' + id + '>' + text + '</option>'));
-    }
+    const optionDoms = [];
+    const rencentOptionDoms = [];
     for (i = 0; i < folders.length; i++) {
       var text = folders[i].title;
       const id = folders[i].id;
+      let path = folders[i].path;
+      if (path && path.length) {
+        path = path.replace(/Bookmarks\sBar\\?/gm, '');
+      }
+      if (path && path.length) text += ' (' + path + ')';
       if (recentFoldersIDs.includes(id)) {
+        rencentOptionDoms.push({
+          id,
+          dom: '<option value=' + id + '>' + text + '</option>',
+        });
         continue;
       }
-      if (folders[i].path && folders[i].path.length) text += ' (' + folders[i].path + ')';
-      $('#select-box').append($('<option value=' + folders[i].id + '>' + text + '</option>'));
+      optionDoms.unshift('<option value=' + folders[i].id + '>' + text + '</option>');
     }
+
+    for (i = recentFolders.length - 1; i >= 0; i--) {
+      var id = recentFolders[i].id;
+      const item = rencentOptionDoms.find((i) => i.id === id);
+      item && optionDoms.unshift(item.dom);
+    }
+    optionDoms.unshift(`<option value="" selected>选择...</option>`);
+    $('#select-box').html(optionDoms.join(''));
     $('.select2').select2({ matcher: matcher });
   });
 }

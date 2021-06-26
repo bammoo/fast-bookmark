@@ -52,6 +52,8 @@ $(function () {
 
           //create new folder
           chrome.bookmarks.create({
+            // the index of folder 'team'
+            index: 7,
             parentId: homeFolderId,
             title: newFolderName,
           });

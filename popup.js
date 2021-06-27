@@ -93,6 +93,7 @@ $(function () {
           folders = new Array();
           findFolderNode({ title: parentFolderName }, function () {
             chrome.bookmarks.create({
+              index: 0,
               parentId: folders[0].id,
               title: newFolderName,
             });
@@ -102,6 +103,7 @@ $(function () {
             findFolderNode({ title: newFolderName }, function () {
               saveRecent({ id: folders[0].id, title: newFolderName });
               chrome.bookmarks.create({
+                index: 0,
                 parentId: folders[0].id,
                 title: $('#inputTitle').val(),
                 url: currentTab.url,

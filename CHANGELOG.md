@@ -1,6 +1,11 @@
 # changelog
 
-v1.4 2021-6-6
+v1.4 2021-6-27
+
+- when create a bookmark, move it front, and move all parent folder
+  to front except folder direct under "Bookmarks Bar"
+
+v1.4 2021-6-26
 
 - move new folder to front position
 

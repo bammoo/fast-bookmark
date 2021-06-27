@@ -1,6 +1,7 @@
 var folders;
-var homeFolderId = '1'; //"Lesezeichenleiste";
+const BOOKMARKS_BAR = '1';
 const OFFSET_INDEX = 3;
+
 var excludeMatcher = (title) => {
   return ['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1;
 };
@@ -24,11 +25,23 @@ $(function () {
 
   const saveTab = () => {
     const parentId = $('#select-box').val();
-    const folderTItle = folders.find((i) => i.id === parentId).title;
+    const selectNode = folders.find((i) => i.id === parentId);
+    // remove "BOOKMARKS_BAR" and push current folder
+    const idPath = selectNode.idPath.slice(1).concat([parentId]);
+    idPath.forEach((nid, idx) => {
+      // 把folder移动到所属父级的前面去
+      // 把 BOOKMARKS_BAR 直属的子级folder移动到前面（但是要在OFFSET_INDEX后面）去
+      chrome.bookmarks.move(nid, { index: idx === 0 ? OFFSET_INDEX : 0 }, function (e) {
+        console.log(e);
+      });
+    });
+    const folderTItle = selectNode.title;
     saveRecent({ id: parentId, title: folderTItle });
 
     const title = $('#inputTitle').val();
+
     chrome.bookmarks.create({
+      index: 0,
       parentId,
       title,
       url: currentTab.url,
@@ -55,7 +68,7 @@ $(function () {
           chrome.bookmarks.create({
             // the index of folder 'team'
             index: OFFSET_INDEX,
-            parentId: homeFolderId,
+            parentId: BOOKMARKS_BAR,
             title: newFolderName,
           });
 
@@ -207,9 +220,11 @@ function processNode(bookmarkNode, query, parentNodes) {
           return node.title;
         })
         .join('\\');
+      var idPath = parentNodes.map((node) => node.id);
 
       folders.push({
         title: bookmarkNode.title,
+        idPath,
         id: bookmarkNode.id,
         path: folderPath,
       });

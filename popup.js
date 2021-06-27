@@ -1,5 +1,6 @@
 var folders;
 var homeFolderId = '1'; //"Lesezeichenleiste";
+const OFFSET_INDEX = 3;
 var excludeMatcher = (title) => {
   return ['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1;
 };
@@ -53,7 +54,7 @@ $(function () {
           //create new folder
           chrome.bookmarks.create({
             // the index of folder 'team'
-            index: 7,
+            index: OFFSET_INDEX,
             parentId: homeFolderId,
             title: newFolderName,
           });

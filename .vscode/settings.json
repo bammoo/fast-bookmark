@@ -1,1 +1,1 @@
-{ "git.postCommitCommand": "none" }
+{ "git.postCommitCommand": "push" }

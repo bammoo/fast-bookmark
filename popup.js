@@ -1,6 +1,7 @@
 var folders;
 const BOOKMARKS_BAR = '1';
 const OFFSET_INDEX = 3;
+const MAX_STORE = 20;
 
 var excludeMatcher = (title) => {
   return ['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1;
@@ -13,7 +14,7 @@ const saveRecent = (newItem) => {
   // remove previous occurrences of this foler
   recentFolders = recentFolders.filter((i) => i.id !== newItem.id);
   recentFolders.unshift(newItem);
-  if (recentFolders.length > 10) {
+  if (recentFolders.length > MAX_STORE) {
     recentFolders = recentFolders.slice(0, 18);
   }
   localStorage.setItem(CACHE_KEY_RECENT_FOLDER, JSON.stringify(recentFolders));

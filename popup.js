@@ -28,12 +28,22 @@ $(function () {
     const selectNode = folders.find((i) => i.id === parentId);
     // remove "BOOKMARKS_BAR" and push current folder
     const idPath = selectNode.idPath.slice(1).concat([parentId]);
-    idPath.forEach((nid, idx) => {
+    idPath.forEach((nid, depth) => {
       // 把folder移动到所属父级的前面去
       // 把 BOOKMARKS_BAR 直属的子级folder移动到前面（但是要在OFFSET_INDEX后面）去
-      chrome.bookmarks.move(nid, { index: idx === 0 ? OFFSET_INDEX : 0 }, function (e) {
-        console.log(e);
-      });
+      if (depth === 0) {
+        const index = folders.find((i) => i.id === nid).index;
+        // when folder is already in front, should not move it
+        if (index > OFFSET_INDEX) {
+          chrome.bookmarks.move(nid, { index: OFFSET_INDEX }, function (e) {
+            console.log(e);
+          });
+        }
+      } else {
+        chrome.bookmarks.move(nid, { index: 0 }, function (e) {
+          console.log(e);
+        });
+      }
     });
     const folderTItle = selectNode.title;
     saveRecent({ id: parentId, title: folderTItle });
@@ -228,6 +238,7 @@ function processNode(bookmarkNode, query, parentNodes) {
         title: bookmarkNode.title,
         idPath,
         id: bookmarkNode.id,
+        index: bookmarkNode.index,
         path: folderPath,
       });
     }

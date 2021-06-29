@@ -1,5 +1,9 @@
 # changelog
 
+v1.5 2021-6-29
+
+- when add bookmark to folder which index less than 3, should not move it
+
 v1.4 2021-6-27
 
 - when create a bookmark, move it front, and move all parent folder

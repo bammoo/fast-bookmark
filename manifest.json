@@ -17,6 +17,13 @@
     "48": "icons/bookmark-icon-1-48px.png",
     "128": "icons/bookmark-icon-1-128px.png"
   },
-  "manifest_version": 2,
-  "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'"
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+1",
+        "mac": "Command+Ctrl+S"
+      }
+    }
+  },
+  "manifest_version": 2
 }

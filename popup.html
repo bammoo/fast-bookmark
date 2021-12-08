@@ -8,6 +8,7 @@
     <script src="select2/select2.min.js"></script>
 
     <link href="css/styles.css" rel="stylesheet">
+    <script src="utils.js"></script>
     <script src="popup.js"></script>
 </head>
 
@@ -17,18 +18,28 @@
         <div id="notifications" class="text-danger" style="display: none"></div>
 
         <form class="form form-horizontal">
+            <div><button id="tmpSave" type="button" class="btn btn-default">tmp save all</button></div>
+
+            <!-- 
+            <div class="form-group">
+                <label for="saveAll" class="col-xs-2 control-label">saveAll</label>
+                <div class="col-xs-10">
+                    <input type="checkbox" id="saveAll" />
+                </div>
+            </div> -->
+
+            <div class="form-group">
+                <label for="inputTitle" class="col-xs-2 control-label">Title</label>
+                <div class="col-xs-10">
+                    <input type="text" id="inputTitle" placeholder="title">
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="select-box" class="col-xs-2 control-label">Folder v 5</label>
                 <div class="col-xs-10">
                     <select id="select-box" class="select2">
                     </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="inputTitle" class="col-xs-2 control-label">Title</label>
-                <div class="col-xs-10">
-                    <input type="text" class="form-control input-sm" id="inputTitle" placeholder="title">
                 </div>
             </div>
             <button id="submitBtn" type="submit" class="btn btn-default pull-right">Submit</button>

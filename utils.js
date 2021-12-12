@@ -113,7 +113,14 @@ function processNode(bookmarkNode, query, parentNodes) {
 // ------------------------------------------------ other utils  ----
 
 var excludeMatcher = (title) => {
-  return ['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1;
+  if (['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1) {
+    return true;
+  }
+  // `.` 开头的是自动批量保存，排除
+  if (title.startsWith('.')) {
+    return true;
+  }
+  return false;
 };
 
 function isCheckedSaveAll() {

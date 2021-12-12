@@ -107,7 +107,8 @@ $(function () {
     }
   });
   $('#tmpSave').click(function (e) {
-    var newFolderName = $('#inputTitle').val().trim();
+    // `.` 开头用来作为类别标识
+    var newFolderName = '.' + $('#inputTitle').val().trim();
 
     //create new folder
     chrome.bookmarks.create({

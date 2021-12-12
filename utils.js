@@ -58,9 +58,14 @@ function matcher(params, data) {
   return data.toLowerCase().indexOf(params.toLowerCase()) >= 0;
 }
 
-function findFolderNode(query, callback) {
+function findFolderNode({ query, enableExcludeRule, callback }) {
   chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
-    processArrayOfNodes(bookmarkTreeNodes, query, []);
+    processArrayOfNodes({
+      bookmarkNodes: bookmarkTreeNodes,
+      query,
+      parentNodes: [],
+      enableExcludeRule,
+    });
     if (folders.length === 0) {
       $('#notifications').show();
       $('#notifications').html('Folder not found');
@@ -70,15 +75,20 @@ function findFolderNode(query, callback) {
   });
 }
 
-function processArrayOfNodes(bookmarkNodes, query, parentNodes) {
+function processArrayOfNodes({ bookmarkNodes, query, parentNodes, enableExcludeRule }) {
   for (var i = 0; i < bookmarkNodes.length; i++) {
     var tempParentNodes = parentNodes.slice();
-    processNode(bookmarkNodes[i], query, tempParentNodes);
+    processNode({
+      bookmarkNode: bookmarkNodes[i],
+      query,
+      parentNodes: tempParentNodes,
+      enableExcludeRule,
+    });
   }
 }
 
-function processNode(bookmarkNode, query, parentNodes) {
-  if (excludeMatcher(bookmarkNode.title)) {
+function processNode({ bookmarkNode, query, parentNodes, enableExcludeRule }) {
+  if (enableExcludeRule && matchExcludeRules(bookmarkNode.title)) {
     return;
   }
 
@@ -105,14 +115,19 @@ function processNode(bookmarkNode, query, parentNodes) {
     }
     if (bookmarkNode.children && bookmarkNode.children.length > 0) {
       if (bookmarkNode.title.length) parentNodes.push(bookmarkNode);
-      processArrayOfNodes(bookmarkNode.children, query, parentNodes);
+      processArrayOfNodes({
+        bookmarkNodes: bookmarkNode.children,
+        query,
+        parentNodes,
+        enableExcludeRule,
+      });
     }
   }
 }
 
 // ------------------------------------------------ other utils  ----
 
-var excludeMatcher = (title) => {
+var matchExcludeRules = (title) => {
   if (['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1) {
     return true;
   }

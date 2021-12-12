@@ -47,14 +47,18 @@ $(function () {
 
           //save bookmark in new folder
           folders = new Array();
-          findFolderNode({ title: newFolderName }, function () {
-            saveRecent({ id: folders[0].id, title: newFolderName });
-            chrome.bookmarks.create({
-              parentId: folders[0].id,
-              title: $('#inputTitle').val(),
-              url: currentTab.url,
-            });
-            window.close();
+          findFolderNode({
+            query: { title: newFolderName },
+            enableExcludeRule: true,
+            callback: function () {
+              saveRecent({ id: folders[0].id, title: newFolderName });
+              chrome.bookmarks.create({
+                parentId: folders[0].id,
+                title: $('#inputTitle').val(),
+                url: currentTab.url,
+              });
+              window.close();
+            },
           });
         } else {
           //new folder within other user defined folder
@@ -64,25 +68,33 @@ $(function () {
 
           //create new folder
           folders = new Array();
-          findFolderNode({ title: parentFolderName }, function () {
-            chrome.bookmarks.create({
-              index: 0,
-              parentId: folders[0].id,
-              title: newFolderName,
-            });
-
-            //save bookmark in new folder
-            folders = new Array();
-            findFolderNode({ title: newFolderName }, function () {
-              saveRecent({ id: folders[0].id, title: newFolderName });
+          findFolderNode({
+            query: { title: parentFolderName },
+            enableExcludeRule: true,
+            callback: function () {
               chrome.bookmarks.create({
                 index: 0,
                 parentId: folders[0].id,
-                title: $('#inputTitle').val(),
-                url: currentTab.url,
+                title: newFolderName,
               });
-              window.close();
-            });
+
+              //save bookmark in new folder
+              folders = new Array();
+              findFolderNode({
+                query: { title: newFolderName },
+                enableExcludeRule: true,
+                callback: function () {
+                  saveRecent({ id: folders[0].id, title: newFolderName });
+                  chrome.bookmarks.create({
+                    index: 0,
+                    parentId: folders[0].id,
+                    title: $('#inputTitle').val(),
+                    url: currentTab.url,
+                  });
+                  window.close();
+                },
+              });
+            },
           });
         }
       }
@@ -120,18 +132,22 @@ $(function () {
 
     //save bookmark in new folder
     folders = new Array();
-    findFolderNode({ title: newFolderName }, function () {
-      saveRecent({ id: folders[0].id, title: newFolderName });
-      chrome.tabs.query({ currentWindow: true }, function (activeTabsInCurrentWindow) {
-        activeTabsInCurrentWindow.forEach((item) => {
-          chrome.bookmarks.create({
-            parentId: folders[0].id,
-            title: item.title,
-            url: item.url,
+    findFolderNode({
+      query: { title: newFolderName },
+      enableExcludeRule: false,
+      callback: function () {
+        saveRecent({ id: folders[0].id, title: newFolderName });
+        chrome.tabs.query({ currentWindow: true }, function (activeTabsInCurrentWindow) {
+          activeTabsInCurrentWindow.forEach((item) => {
+            chrome.bookmarks.create({
+              parentId: folders[0].id,
+              title: item.title,
+              url: item.url,
+            });
           });
+          close();
         });
-        close();
-      });
+      },
     });
   });
 });
@@ -139,7 +155,12 @@ $(function () {
 function buildSelectOptions() {
   var query = '';
   chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
-    processArrayOfNodes(bookmarkTreeNodes, query, []);
+    processArrayOfNodes({
+      bookmarkNodes: bookmarkTreeNodes,
+      query,
+      parentNodes: [],
+      enableExcludeRule: true,
+    });
     const [optionDoms, rencentOptionDoms] = getRecentFoldersOptions();
     const recentFolders = getRecentFolders();
     for (i = recentFolders.length - 1; i >= 0; i--) {

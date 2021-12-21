@@ -128,7 +128,9 @@ function processNode({ bookmarkNode, query, parentNodes, enableExcludeRule }) {
 // ------------------------------------------------ other utils  ----
 
 var matchExcludeRules = (title) => {
-  if (['aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1) {
+  if (
+    ['workspaces', 'aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1
+  ) {
     return true;
   }
   // `.` 开头的是自动批量保存，排除

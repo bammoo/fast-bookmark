@@ -4,6 +4,7 @@
   "description": "Enables you to save bookmarks super fast.",
   "author": "Jakob Wasserthal",
   "permissions": [
+    "storage",
     "bookmarks",
     "tabs"
   ],

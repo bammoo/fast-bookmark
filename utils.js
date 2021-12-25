@@ -2,7 +2,10 @@
 
 const MAX_STORE = 20;
 const CACHE_KEY_RECENT_FOLDER = 'CACHE_KEY_RECENT_FOLDER';
-let recentFolders = JSON.parse(localStorage.getItem(CACHE_KEY_RECENT_FOLDER)) || [];
+let recentFolders = [];
+chrome.storage.sync.get([CACHE_KEY_RECENT_FOLDER], (v) => {
+  if (v?.CACHE_KEY_RECENT_FOLDER) recentFolders = v.CACHE_KEY_RECENT_FOLDER;
+});
 
 function getRecentFoldersIDs() {
   return recentFolders.map((i) => i.id);
@@ -18,7 +21,7 @@ function saveRecent(newItem) {
   if (recentFolders.length > MAX_STORE) {
     recentFolders = recentFolders.slice(0, MAX_STORE);
   }
-  localStorage.setItem(CACHE_KEY_RECENT_FOLDER, JSON.stringify(recentFolders));
+  chrome.storage.sync.set({ CACHE_KEY_RECENT_FOLDER: recentFolders });
 }
 
 function getRecentFoldersOptions() {

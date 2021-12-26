@@ -18,7 +18,7 @@ $(function () {
       title,
       url: currentTab.url,
     });
-    // close();
+    close();
   };
 
   var currentTab;
@@ -29,10 +29,10 @@ $(function () {
 
   $('body').on('keyup', '.select2-input', function (event) {
     if(event.which === 39) {
-      const hoverd = $('.select2-highlighted').text();
-      if(hoverd) {
-        $('.select2-input').val(hoverd)
-      }
+      // const hoverd = $('.select2-highlighted').text();
+      // if(hoverd) {
+      //   $('.select2-input').val(hoverd)
+      // }
     }
     else if (event.which === 13) {
       var inputStr = $('.select2-input').val();

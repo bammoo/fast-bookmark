@@ -20,3 +20,7 @@ body {
 ul.select2-results {
  max-height: 300px;
 }
+.select2-result-selectable .select2-match, .select2-result-unselectable .select2-match {
+    text-decoration: none;
+    color: orange;
+  }

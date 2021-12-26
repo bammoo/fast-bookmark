@@ -24,7 +24,11 @@ function saveRecent(newItem) {
   chrome.storage.sync.set({ CACHE_KEY_RECENT_FOLDER: recentFolders });
 }
 
-function getRecentFoldersOptions() {
+/**
+ * 
+ * @returns options and recent options
+ */
+function getSelect2Options() {
   const optionDoms = [];
   const rencentOptionDoms = [];
   for (i = 0; i < folders.length; i++) {
@@ -38,11 +42,11 @@ function getRecentFoldersOptions() {
     if (getRecentFoldersIDs().includes(id)) {
       rencentOptionDoms.push({
         id,
-        dom: '<option value=' + id + '>' + text + '</option>',
+        dom: `<option value="${id}">${text}</option>`,
       });
       continue;
     }
-    optionDoms.unshift('<option value=' + folders[i].id + '>' + text + '</option>');
+    optionDoms.unshift(`<option value='${folders[i].id}'>'${text}'</option>`);
   }
   return [optionDoms, rencentOptionDoms];
 }

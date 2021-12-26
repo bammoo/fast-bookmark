@@ -46,7 +46,7 @@ function getSelect2Options() {
       });
       continue;
     }
-    optionDoms.unshift(`<option value='${folders[i].id}'>'${text}'</option>`);
+    optionDoms.unshift(`<option value='${folders[i].id}'>${text}</option>`);
   }
   return [optionDoms, rencentOptionDoms];
 }

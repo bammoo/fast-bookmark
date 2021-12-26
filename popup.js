@@ -1,12 +1,82 @@
 var folders;
-const BOOKMARKS_BAR = '1';
+const BOOKMARKS_BAR_ID = '1';
 const OFFSET_INDEX = 3;
+const defaultOption = '选择...';
 
 $(function () {
   folders = new Array();
   buildSelectOptions();
+  setTimeout(function () {
+    $('.select2').select2('open');
+  }, 100);
 
-  const saveTab = (close) => {
+  var currentTab;
+  chrome.tabs.getSelected(null, function (tab) {
+    currentTab = tab;
+    $('#inputTitle').val(currentTab.title);
+  });
+
+  let saveBaseFolderId;
+  $('body').on('keyup', '.select2-input', function (event) {
+    // right arrow
+    if (event.which === 39) {
+      const hoverd = $('.select2-highlighted').text();
+      if (hoverd && hoverd !== defaultOption) {
+        try {
+          const id = $('.select2-highlighted').data('select2Data').element[0].value;
+          saveBaseFolderId = id;
+          const item = folders.find((i) => i.id === id);
+          console.log(`xjf: item`, item);
+          $('#parent-folder').val(`${item.title}`);
+          $('.select2-input').val('>');
+        } catch (error) {
+          showError('parent folder parse error');
+        }
+      }
+    }
+    // enter
+    else if (event.which === 13) {
+      var inputStr = event.target.value;
+      if (inputStr.indexOf('>') !== 0) {
+        showError('need starts with `>`');
+        return;
+      }
+
+      // TODO: 这里的逻辑应该改为 `split('>')` 后递归创建新的子目录
+      // var elems = inputStr.split('>');
+      // var parentFolderName = elems[0].trim();
+      // var newFolderName = elems[1].trim();
+      var newFolderName = inputStr.slice(1);
+
+      //create new folder
+      chrome.bookmarks.create(
+        {
+          // the index of folder 'team'
+          index: saveBaseFolderId ? 0 : OFFSET_INDEX,
+          parentId: saveBaseFolderId || BOOKMARKS_BAR_ID,
+          title: newFolderName,
+        },
+        (result) => {
+          if (saveBaseFolderId) {
+            moveFoldertoFront(saveBaseFolderId);
+          }
+          console.log(`xjf: saved to`, newFolderName);
+          //save bookmark in new folder
+          const newId = result.id;
+          saveRecent({ id: newId, title: newFolderName });
+          chrome.bookmarks.create({
+            index: 0,
+            parentId: newId,
+            title: $('#inputTitle').val(),
+            url: currentTab.url,
+          });
+          window.close();
+        },
+      );
+    }
+  });
+
+  $('.select2').change(function () {
     const parentId = $('#select-box').val();
     moveFoldertoFront(parentId);
 
@@ -18,143 +88,7 @@ $(function () {
       title,
       url: currentTab.url,
     });
-    close();
-  };
-
-  var currentTab;
-  chrome.tabs.getSelected(null, function (tab) {
-    currentTab = tab;
-    $('#inputTitle').val(currentTab.title);
-  });
-
-  $('body').on('keyup', '.select2-input', function (event) {
-    if(event.which === 39) {
-      // const hoverd = $('.select2-highlighted').text();
-      // if(hoverd) {
-      //   $('.select2-input').val(hoverd)
-      // }
-    }
-    else if (event.which === 13) {
-      var inputStr = $('.select2-input').val();
-      if (inputStr.indexOf('>') !== -1) {
-        var elems = inputStr.split('>');
-
-        //new folder on homeFolder level
-        if (elems[0] === '') {
-          var newFolderName = elems[1].trim();
-
-          //create new folder
-          chrome.bookmarks.create({
-            // the index of folder 'team'
-            index: OFFSET_INDEX,
-            parentId: BOOKMARKS_BAR,
-            title: newFolderName,
-          });
-
-          //save bookmark in new folder
-          folders = new Array();
-          findFolderNode({
-            query: { title: newFolderName },
-            enableExcludeRule: true,
-            callback: function () {
-              saveRecent({ id: folders[0].id, title: newFolderName });
-              chrome.bookmarks.create({
-                parentId: folders[0].id,
-                title: $('#inputTitle').val(),
-                url: currentTab.url,
-              });
-              window.close();
-            },
-          });
-        } else {
-          //new folder within other user defined folder
-
-          var parentFolderName = elems[0].trim();
-          var newFolderName = elems[1].trim();
-
-          //create new folder
-          folders = new Array();
-          findFolderNode({
-            query: { title: parentFolderName },
-            enableExcludeRule: true,
-            callback: function () {
-              chrome.bookmarks.create({
-                index: 0,
-                parentId: folders[0].id,
-                title: newFolderName,
-              });
-
-              //save bookmark in new folder
-              folders = new Array();
-              findFolderNode({
-                query: { title: newFolderName },
-                enableExcludeRule: true,
-                callback: function () {
-                  saveRecent({ id: folders[0].id, title: newFolderName });
-                  chrome.bookmarks.create({
-                    index: 0,
-                    parentId: folders[0].id,
-                    title: $('#inputTitle').val(),
-                    url: currentTab.url,
-                  });
-                  window.close();
-                },
-              });
-            },
-          });
-        }
-      }
-    }
-  });
-
-  setTimeout(function () {
-    $('.select2').select2('open');
-  }, 100);
-
-  $('.select2').change(function () {
-    saveTab(() => window.close());
-  });
-
-  $('#submitBtn').click(function (e) {
-    if ($('#select-box').val() === '') {
-      e.preventDefault();
-      $('#notifications').show();
-      $('#notifications').html('Choose a folder');
-    } else {
-      saveTab(() => window.close());
-    }
-  });
-  $('#tmpSave').click(function (e) {
-    // `.` 开头用来作为类别标识
-    var newFolderName = '.' + $('#inputTitle').val().trim();
-
-    //create new folder
-    chrome.bookmarks.create({
-      // the index of folder 'team'
-      index: OFFSET_INDEX,
-      parentId: BOOKMARKS_BAR,
-      title: newFolderName,
-    });
-
-    //save bookmark in new folder
-    folders = new Array();
-    findFolderNode({
-      query: { title: newFolderName },
-      enableExcludeRule: false,
-      callback: function () {
-        saveRecent({ id: folders[0].id, title: newFolderName });
-        chrome.tabs.query({ currentWindow: true }, function (activeTabsInCurrentWindow) {
-          activeTabsInCurrentWindow.forEach((item) => {
-            chrome.bookmarks.create({
-              parentId: folders[0].id,
-              title: item.title,
-              url: item.url,
-            });
-          });
-          close();
-        });
-      },
-    });
+    window.close();
   });
 });
 
@@ -174,7 +108,7 @@ function buildSelectOptions() {
       const item = rencentOptionDoms.find((i) => i.id === id);
       item && optionDoms.unshift(item.dom);
     }
-    optionDoms.unshift(`<option value="" selected>选择...</option>`);
+    optionDoms.unshift(`<option value="" selected>${defaultOption}</option>`);
     $('#select-box').html(optionDoms.join(''));
     $('.select2').select2({ matcher: matcher });
   });

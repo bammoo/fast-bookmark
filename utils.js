@@ -1,8 +1,40 @@
-// ------------------------ recent utils ------------------------
+const BOOKMARKS_BAR = 'Bookmarks Bar';
+
+function showError(t) {
+  $('#notifications').show();
+  $('#notifications').html(t);
+}
+
+/**
+ * @dependent {folders}
+ * @returns options and recent options
+ */
+function getSelect2Options() {
+  const optionDoms = [];
+  const rencentOptionDoms = [];
+  for (i = 0; i < folders.length; i++) {
+    var text = folders[i].title;
+    const id = folders[i].id;
+    let titlePath = folders[i].titlePath;
+    if (titlePath && titlePath.length) text += ' (' + titlePath + ')';
+    if (getRecentFoldersIDs().includes(id)) {
+      rencentOptionDoms.push({
+        id,
+        dom: `<option value="${id}">${text}</option>`,
+      });
+      continue;
+    }
+    optionDoms.unshift(`<option value='${folders[i].id}'>${text}</option>`);
+  }
+  return [optionDoms, rencentOptionDoms];
+}
+
+// ------------------------ recent folders ------------------------
 
 const MAX_STORE = 20;
 const CACHE_KEY_RECENT_FOLDER = 'CACHE_KEY_RECENT_FOLDER';
 let recentFolders = [];
+// TODO: init select2 options after this
 chrome.storage.sync.get([CACHE_KEY_RECENT_FOLDER], (v) => {
   if (v?.CACHE_KEY_RECENT_FOLDER) recentFolders = v.CACHE_KEY_RECENT_FOLDER;
 });
@@ -24,43 +56,16 @@ function saveRecent(newItem) {
   chrome.storage.sync.set({ CACHE_KEY_RECENT_FOLDER: recentFolders });
 }
 
-/**
- * 
- * @returns options and recent options
- */
-function getSelect2Options() {
-  const optionDoms = [];
-  const rencentOptionDoms = [];
-  for (i = 0; i < folders.length; i++) {
-    var text = folders[i].title;
-    const id = folders[i].id;
-    let path = folders[i].path;
-    if (path && path.length) {
-      path = path.replace(/Bookmarks\sBar\\?/gm, '');
-    }
-    if (path && path.length) text += ' (' + path + ')';
-    if (getRecentFoldersIDs().includes(id)) {
-      rencentOptionDoms.push({
-        id,
-        dom: `<option value="${id}">${text}</option>`,
-      });
-      continue;
-    }
-    optionDoms.unshift(`<option value='${folders[i].id}'>${text}</option>`);
-  }
-  return [optionDoms, rencentOptionDoms];
-}
+// ----------------------------- building select2 dom tree ---------------
 
-// ----------------------------- utils for building select2 dom tree ---------------
-
-var r = new RegExp(/\s\(.*\)?$/);
+var regx = new RegExp(/\s\(.*\)?$/);
 function matcher(params, data) {
   if ($.trim(params) === '') {
     return data;
   }
 
   // TODO: Smarter regexp matching
-  var matches = data.match(r);
+  var matches = data.match(regx);
   if (matches) data = data.substr(0, matches.index);
   return data.toLowerCase().indexOf(params.toLowerCase()) >= 0;
 }
@@ -74,8 +79,7 @@ function findFolderNode({ query, enableExcludeRule, callback }) {
       enableExcludeRule,
     });
     if (folders.length === 0) {
-      $('#notifications').show();
-      $('#notifications').html('Folder not found');
+      showError('Folder not found');
     } else {
       callback();
     }
@@ -107,7 +111,7 @@ function processNode({ bookmarkNode, query, parentNodes, enableExcludeRule }) {
     ) {
       var folderPath = parentNodes
         .map(function (node) {
-          return node.title;
+          return node.title === BOOKMARKS_BAR ? '' : node.title;
         })
         .join('\\');
       var idPath = parentNodes.map((node) => node.id);
@@ -117,7 +121,7 @@ function processNode({ bookmarkNode, query, parentNodes, enableExcludeRule }) {
         idPath,
         id: bookmarkNode.id,
         index: bookmarkNode.index,
-        path: folderPath,
+        titlePath: folderPath,
       });
     }
     if (bookmarkNode.children && bookmarkNode.children.length > 0) {
@@ -132,25 +136,22 @@ function processNode({ bookmarkNode, query, parentNodes, enableExcludeRule }) {
   }
 }
 
-// ------------------------------------------------ other utils  ----
+// ------------------------------------------------ other  ----
 
 var matchExcludeRules = (title) => {
+  // TODO: move to options
   if (
     ['workspaces', 'aaa', 'old', '项目', 'Mobile Bookmarks', 'Other Bookmarks'].indexOf(title) > -1
   ) {
     return true;
   }
-  // `.` 开头的是自动批量保存，排除
-  if (title.startsWith('.')) {
-    return true;
-  }
   return false;
 };
 
-function isCheckedSaveAll() {
-  return $('#saveAll')[0].checked === true;
-}
-
+/**
+ * move parent folder to front, and save it to rencent list
+ * @param {string} parentId
+ */
 function moveFoldertoFront(parentId) {
   const selectNode = folders.find((i) => i.id === parentId);
   // remove "BOOKMARKS_BAR" and push current folder

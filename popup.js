@@ -77,7 +77,7 @@ $(function () {
   });
 
   $('.select2').change(function () {
-    const parentId = $('#select-box').val();
+    const parentId = $('select#select-box').val();
     moveFoldertoFront(parentId);
 
     const title = $('#inputTitle').val();
@@ -109,7 +109,7 @@ function buildSelectOptions() {
       item && optionDoms.unshift(item.dom);
     }
     optionDoms.unshift(`<option value="" selected>${defaultOption}</option>`);
-    $('#select-box').html(optionDoms.join(''));
-    $('.select2').select2({ matcher: matcher });
+    $('select#select-box').html(optionDoms.join(''));
+    $('select#select-box').select2({ matcher: matcher });
   });
 }

@@ -1,6 +1,6 @@
 var folders;
 const BOOKMARKS_BAR_ID = '1';
-const OFFSET_INDEX = 3;
+const OFFSET_INDEX = 4;
 const defaultOption = '选择...';
 
 $(function () {

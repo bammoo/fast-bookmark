@@ -1,7 +1,7 @@
 var folders;
 const BOOKMARKS_BAR_ID = '1';
 const OFFSET_INDEX = 4;
-const defaultOption = '选择...';
+const defaultOption = 'Choose...';
 
 $(function () {
   folders = new Array();
@@ -11,7 +11,8 @@ $(function () {
   }, 100);
 
   var currentTab;
-  chrome.tabs.getSelected(null, function (tab) {
+
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     currentTab = tab;
     $('#inputTitle').val(currentTab.title);
   });
@@ -26,7 +27,7 @@ $(function () {
           const id = $('.select2-highlighted').data('select2Data').element[0].value;
           saveBaseFolderId = id;
           const item = folders.find((i) => i.id === id);
-          console.log(`xjf: item`, item);
+          // console.log(`xjf: item`, item);
           $('#parent-folder').val(`${item.title}`);
           $('.select2-input').val('>');
         } catch (error) {
@@ -60,7 +61,7 @@ $(function () {
           if (saveBaseFolderId) {
             moveFoldertoFront(saveBaseFolderId);
           }
-          console.log(`xjf: saved to`, newFolderName);
+          // console.log(`xjf: saved to`, newFolderName);
           //save bookmark in new folder
           const newId = result.id;
           saveRecent({ id: newId, title: newFolderName });
